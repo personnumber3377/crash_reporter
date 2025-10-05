@@ -143,12 +143,19 @@ def classify_output(stdout: str, stderr: str) -> Tuple[bool, str]:
     # will decide to retry. If exit code==0 then nothing to do.
     return False, "No ASAN output"
 
+def save_payload(stuff):
+    fh = open("data.txt", "wb")
+    fh.write(stuff.encode("ascii"))
+    fh.close()
+    return
+
 def send_via_sendmail(sendmail_path: str, to_addr: str, subject: str, body: str) -> bool:
     if not Path(sendmail_path).exists():
         logging.debug("sendmail not found at %s", sendmail_path)
         return False
     headers = f"To: {to_addr}\nSubject: {subject}\n\n"
     try:
+        save_payload(headers + body)
         p = subprocess.run([sendmail_path, "-t"], input=(headers + body), text=True)
         return p.returncode == 0
     except Exception:
